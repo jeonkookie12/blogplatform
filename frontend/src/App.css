@@ -1,0 +1,11 @@
+body {
+  margin: 0;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #4b669c; /* match your Auth background */
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  color: #222;
+}
