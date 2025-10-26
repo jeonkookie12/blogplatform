@@ -828,7 +828,9 @@ function Post({ post, onAddComment, onEditPost, onDeletePost, onEditComment, onD
 }
 
 function PostsList({ posts, onAddComment, onEditPost, onDeletePost, onDeleteComment, currentUser, usersById }) {
-  console.log('PostsList received posts:', posts); // Debug input
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 10; 
+
   if (!posts || !Array.isArray(posts) || posts.length === 0) {
     return (
       <div className="rounded-2xl bg-white p-4 text-center sm:p-6">
@@ -839,9 +841,16 @@ function PostsList({ posts, onAddComment, onEditPost, onDeletePost, onDeleteComm
 
   const validPosts = posts.filter((p) => p && typeof p === 'object' && p.id);
 
+  const indexOfLastPost = currentPage * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const currentPosts = validPosts.slice(indexOfFirstPost, indexOfLastPost);
+  const totalPages = Math.ceil(validPosts.length / postsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   return (
     <div className="space-y-4">
-      {validPosts
+      {currentPosts
         .slice()
         .reverse()
         .map((p) => (
@@ -856,6 +865,23 @@ function PostsList({ posts, onAddComment, onEditPost, onDeletePost, onDeleteComm
             usersById={usersById}
           />
         ))}
+      {validPosts.length > postsPerPage && (
+        <div className="mt-4 flex justify-center space-x-2">
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              onClick={() => paginate(page)}
+              className={`px-3 py-1 text-sm rounded ${
+                currentPage === page
+                  ? "bg-[#2b2f52] text-white"
+                  : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
