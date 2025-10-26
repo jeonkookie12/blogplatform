@@ -89,6 +89,7 @@ function UserModal({ username, onClose }) {
 function Comment({ comment, onEditComment, onDeleteComment, currentUser, postId }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false); 
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -123,7 +124,7 @@ function Comment({ comment, onEditComment, onDeleteComment, currentUser, postId 
               <button
                 className="w-full px-3 py-2 text-left text-sm font-semibold text-red-600 hover:bg-gray-200 transition-colors"
                 onClick={() => {
-                  onDeleteComment(comment.id);
+                  setIsConfirmDeleteOpen(true); 
                   setIsMenuOpen(false);
                 }}
               >
@@ -152,13 +153,23 @@ function Comment({ comment, onEditComment, onDeleteComment, currentUser, postId 
           <div className="mt-1 text-sm sm:text-base">{comment.body}</div>
         </>
       )}
+      {isConfirmDeleteOpen && (
+        <ConfirmationModal
+          message="Are you sure you want to delete this comment?"
+          onConfirm={() => {
+            onDeleteComment(comment.id);
+            setIsConfirmDeleteOpen(false);
+          }}
+          onCancel={() => setIsConfirmDeleteOpen(false)}
+        />
+      )}
     </div>
   );
 }
 
 function SuccessModal({ onClose }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 bg-opacity-50 p-4">
       <div className="w-full max-w-xs rounded-lg bg-white p-6 shadow-xl sm:max-w-sm">
         <h3 className="mb-4 text-lg font-semibold sm:text-xl">Account Created!</h3>
         <p className="mb-6 text-sm sm:text-base">
@@ -174,6 +185,31 @@ function SuccessModal({ onClose }) {
     </div>
   );
 }
+
+  function ConfirmationModal({ onConfirm, onCancel, message }) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 bg-opacity-50 p-4">
+        <div className="w-full max-w-xs rounded-lg bg-white p-6 shadow-xl sm:max-w-sm">
+          <h3 className="mb-4 text-lg font-semibold sm:text-xl">Confirm Deletion</h3>
+          <p className="mb-6 text-sm sm:text-base">{message}</p>
+          <div className="flex gap-2">
+            <button
+              onClick={onConfirm}
+              className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-semibold text-white hover:bg-red-700 sm:text-base"
+            >
+              Confirm
+            </button>
+            <button
+              onClick={onCancel}
+              className="flex-1 rounded-lg bg-gray-300 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-400 sm:text-base"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
 function PostModal({ post, onAddComment, onEditPost, onDeletePost, onDeleteComment, currentUser, usersById, onClose }) {
   return (
@@ -196,6 +232,7 @@ function PostModal({ post, onAddComment, onEditPost, onDeletePost, onDeleteComme
             onAddComment={onAddComment}
             onEditPost={onEditPost}
             onDeletePost={onDeletePost}
+            onEditComment={onEditComment}
             onDeleteComment={onDeleteComment}
             currentUser={currentUser}
             usersById={usersById}
@@ -677,6 +714,7 @@ function Post({ post, onAddComment, onEditPost, onDeletePost, onEditComment, onD
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false); 
   const [currentPage, setCurrentPage] = useState(1);
   const commentsPerPage = 10;
   const menuRef = useRef(null);
@@ -694,8 +732,6 @@ function Post({ post, onAddComment, onEditPost, onDeletePost, onEditComment, onD
   const comments = post.comments || [];
   const currentComments = comments.slice(indexOfFirstComment, indexOfLastComment);
   const totalPages = Math.ceil(comments.length / commentsPerPage);
-
-
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -727,7 +763,7 @@ function Post({ post, onAddComment, onEditPost, onDeletePost, onEditComment, onD
                 <button
                   className="w-full px-3 py-2 text-left text-sm font-semibold text-red-600 hover:bg-gray-200 transition-colors"
                   onClick={() => {
-                    onDeletePost(post.id);
+                    setIsConfirmDeleteOpen(true); 
                     setIsMenuOpen(false);
                   }}
                 >
@@ -764,25 +800,25 @@ function Post({ post, onAddComment, onEditPost, onDeletePost, onEditComment, onD
 
             <section className="mt-4">
               <strong className="text-sm sm:text-base">
-                  Comments ({comments.length})
-                </strong>
+                Comments ({comments.length})
+              </strong>
 
-                <div className="mt-2 space-y-2">
-                  {comments.length > 0 ? (
-                    currentComments.map((c) => (
-                      <Comment
-                        key={c.id}
-                        comment={c}
-                        onEditComment={onEditComment}
-                        onDeleteComment={onDeleteComment}
-                        currentUser={currentUser}
-                        postId={post.id}
-                      />
-                    ))
-                  ) : (
-                    <p className="text-gray-500 text-sm">No comments yet.</p>
-                  )}
-                </div>
+              <div className="mt-2 space-y-2">
+                {comments.length > 0 ? (
+                  currentComments.map((c) => (
+                    <Comment
+                      key={c.id}
+                      comment={c}
+                      onEditComment={onEditComment}
+                      onDeleteComment={onDeleteComment}
+                      currentUser={currentUser}
+                      postId={post.id}
+                    />
+                  ))
+                ) : (
+                  <p className="text-gray-500 text-sm">No comments yet.</p>
+                )}
+              </div>
 
               {post.comments.length > commentsPerPage && (
                 <div className="mt-4 flex justify-center space-x-2">
@@ -817,17 +853,28 @@ function Post({ post, onAddComment, onEditPost, onDeletePost, onEditComment, onD
           onAddComment={onAddComment}
           onEditPost={onEditPost}
           onDeletePost={onDeletePost}
+          onEditComment={onEditComment}
           onDeleteComment={onDeleteComment}
           currentUser={currentUser}
           usersById={usersById}
           onClose={() => setIsModalOpen(false)}
         />
       )}
+      {isConfirmDeleteOpen && (
+        <ConfirmationModal
+          message="Are you sure you want to delete this post?"
+          onConfirm={() => {
+            onDeletePost(post.id);
+            setIsConfirmDeleteOpen(false);
+          }}
+          onCancel={() => setIsConfirmDeleteOpen(false)}
+        />
+      )}
     </>
   );
 }
 
-function PostsList({ posts, onAddComment, onEditPost, onDeletePost, onDeleteComment, currentUser, usersById }) {
+function PostsList({ posts, onAddComment, onEditPost, onDeletePost, onEditComment, onDeleteComment, currentUser, usersById }) {
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 10; 
 
@@ -860,6 +907,7 @@ function PostsList({ posts, onAddComment, onEditPost, onDeletePost, onDeleteComm
             onAddComment={onAddComment}
             onEditPost={onEditPost}
             onDeletePost={onDeletePost}
+            onEditComment={onEditComment}
             onDeleteComment={onDeleteComment}
             currentUser={currentUser}
             usersById={usersById}
@@ -1093,6 +1141,7 @@ export default function App() {
                 onAddComment={addComment}
                 onEditPost={editPost}
                 onDeletePost={handleDeletePost}
+                onEditComment={editComment}
                 onDeleteComment={handleDeleteComment}
                 currentUser={currentUser}
                 usersById={usersById}
