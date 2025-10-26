@@ -12,13 +12,13 @@ export class CommentsController {
   @UseGuards(JwtAuthGuard)
   @Post(':postId')
   create(@Param('postId') postId: string, @Body() createCommentDto: CreateCommentDto, @GetUser() user) {
-    return this.commentsService.create(postId, createCommentDto, user.id);
+    return this.commentsService.create(postId, createCommentDto, user);
   }
 
   @UseGuards(JwtAuthGuard)
   @Put(':id')
   update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto, @GetUser() user) {
-    return this.commentsService.update(id, updateCommentDto, user.id);
+    return this.commentsService.update(id, updateCommentDto, user);
   }
 
   @UseGuards(JwtAuthGuard)
